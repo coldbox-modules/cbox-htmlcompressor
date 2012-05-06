@@ -1,4 +1,4 @@
-<!-----------------------------------------------------------------------
+/**
 ********************************************************************************
 Copyright 2009 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
 www.coldboxframework.com | www.luismajano.com | www.ortussolutions.com
@@ -56,14 +56,14 @@ settings = {
 };
 
 
---->
-<cfcomponent output="false" hint="My Module Configuration">
-<cfscript>
+**/
+component {
+
 	// Module Properties
 	this.title 				= "HTMLCompressor";
 	this.author 			= "Ortus Solutions, Corp";
 	this.webURL 			= "http://www.ortussolutions.com";
-	this.description 		= "An HTML Compressor";
+	this.description 		= "An HTML Compressor for your layouts + views";
 	this.version			= "1.0";
 	// If true, looks for views in the parent first, if not found, then in the module. Else vice-versa
 	this.viewParentLookup 	= true;
@@ -116,35 +116,11 @@ settings = {
 			{pattern="/:handler/:action?"}
 		];
 
-	}
+		// Interceptors
+		interceptors = [
+			{ class="#moduleMapping#.interceptors.Compressor", name="HTMLCompressor" }
+		];
 
-	/**
-	* Compress layouts+views upon rendering.
-	*/
-	function preRender(event,interceptData){
-		var settings 		= controller.getSetting("modules").HTMLCompressor.settings;
-		var cacheResults 	= "";
-		var cacheKey 		= "";
-
-		// Only compress if enabled
-		if( settings.renderCompressor ){
-			// Caching?
-			if( settings.renderCaching ){
-				cacheKey 		= settings.renderCachePrefix & "-#hash( arguments.interceptData.renderedContent )#";
-				cacheResults 	= controller.getCacheBox().getCache( settings.renderCacheProvider ).get( cacheKey );
-				if( isDefined("cacheResults") ){ arguments.interceptData.renderedContent = cacheResults; return; }
-			}
-
-			// compress content
-			controller.getPlugin(plugin="Compressor", module="HTMLCompressor")
-				.compress( arguments.interceptData.renderedContent );
-
-			// caching enabled
-			if( settings.renderCaching ){
-				controller.getCacheBox().getCache( settings.renderCacheProvider )
-					.set( cacheKey, arguments.interceptData.renderedContent, settings.renderCacheTimeout, settings.renderCacheLastAccessTimeout );
-			}
-		}
 	}
 
 	/**
@@ -154,14 +130,57 @@ settings = {
 		// There are more settings you can set on the compressor manually.
 		var compressor = controller.getPlugin(plugin="Compressor", module="HTMLCompressor").getCompressor();
 		// You can set them below if you need to manually http://htmlcompressor.googlecode.com/svn/trunk/doc/com/googlecode/htmlcompressor/compressor/HtmlCompressor.html
+
+		// ContentBox loading
+		if( structKeyExists( controller.getSetting("modules"), "contentbox" ) ){
+			// Let's add ourselves to the main menu in the Modules section
+			var menuService = controller.getWireBox().getInstance("AdminMenuService@cb");
+			// Add Menu Contribution
+			menuService.addSubMenu(topMenu=menuService.MODULES,name="HTMLCompressor",label="HTML Compressor",href="#menuService.buildModuleLink('HTMLCompressor','home.settings')#");
+			// Override settings?
+			var settingService = controller.getWireBox().getInstance("SettingService@cb");
+			var args = {name="cbox-htmlcompressor"};
+			var setting = settingService.findWhere(criteria=args);
+			if( !isNull(setting) ){
+				// override settings from contentbox custom setting
+				controller.getSetting("modules").HTMLCompressor.settings = deserializeJSON( setting.getvalue() );
+			}
+		}
+	}
+
+	/**
+	* Fired when the module is activated by ContentBox Only
+	*/
+	function onActivate(){
+		var settingService = controller.getWireBox().getInstance("SettingService@cb");
+		// store default settings
+		var args = {name="cbox-htmlcompressor", value=serializeJSON( settings )};
+		var compressorSettings = settingService.new(properties=args);
+		settingService.save( compressorSettings );
 	}
 
 	/**
 	* Fired when the module is unregistered and unloaded
 	*/
 	function onUnload(){
-
+		// ContentBox unloading
+		if( structKeyExists( controller.getSetting("modules"), "contentbox" ) ){
+			// Let's remove ourselves to the main menu in the Modules section
+			var menuService = controller.getWireBox().getInstance("AdminMenuService@cb");
+			// Remove Menu Contribution
+			menuService.removeSubMenu(topMenu=menuService.MODULES,name="HTMLCompressor");
+		}
 	}
 
-</cfscript>
-</cfcomponent>
+	/**
+	* Fired when the module is deactivated by ContentBox Only
+	*/
+	function onDeactivate(){
+		var settingService = controller.getWireBox().getInstance("SettingService@cb");
+		var args = {name="cbox-htmlcompressor"};
+		var setting = settingService.findWhere(criteria=args);
+		if( !isNull(setting) ){
+			settingService.delete( setting );
+		}
+	}
+}
