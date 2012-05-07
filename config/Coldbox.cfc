@@ -78,6 +78,18 @@ function configure(){
 		//development = "^cf8.,^railo."
 	};
 
+	//LogBox DSL
+	logBox = {
+		// Define Appenders
+		appenders = {
+			coldboxTracer = { class="coldbox.system.logging.appenders.ColdboxTracerAppender" }
+		},
+		// Root Logger
+		root = { levelmax="DEBUG", appenders="*" },
+		// Implicit Level Categories
+		info = [ "coldbox.system" ]
+	};
+
 	// Module Directives
 	modules = {
 		//Turn to false in production
