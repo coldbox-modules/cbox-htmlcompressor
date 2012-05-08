@@ -28,7 +28,8 @@ component extends="coldbox.system.Interceptor"{
 			if( settings.renderCaching ){
 				cacheKey 		= settings.renderCachePrefix & "-#hash( arguments.interceptData.renderedContent )#";
 				cacheResults 	= cacheBox.getCache( settings.renderCacheProvider ).get( cacheKey );
-				if( !isNull("cacheResults") ){
+				if( !isNull( cacheResults ) ){
+					// get cached results
 					arguments.interceptData.renderedContent = cacheResults;
 					// logging
 					if( log.canDebug() ){ log.debug("Cached Compressed HTML Found, Rendering compressed HTML from cache");}
