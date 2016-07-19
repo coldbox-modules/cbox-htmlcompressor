@@ -1,0 +1,20 @@
+{
+    "name":"Tester",
+    "version":"0.0.0",
+    "slug":"tester",
+    "private":true,
+    "description":"",
+    "dependencies":{
+        "coldbox":"4.2.0+00002"
+    },
+    "devDependencies":{
+        "testbox":"2.3.0+00044"
+    },
+    "installPaths":{
+        "coldbox":"coldbox",
+        "testbox":"testbox"
+    },
+    "testbox":{
+        "runner":"http://localhost:49615/tests/runner.cfm"
+    }
+}

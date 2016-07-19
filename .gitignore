@@ -1,3 +1,8 @@
 .DS_Store
 .settings/*
 settings.xml
+modules/*
+builds/*
+# Tests
+tests/coldbox/*
+tests/testbox/*
