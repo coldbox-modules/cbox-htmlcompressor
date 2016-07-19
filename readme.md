@@ -1,7 +1,7 @@
-# HTML Compressor Module
+## Introduction
 
 This compressor can work with any ColdBox application or as a Module for ContentBox as well.
-Class that compresses given HTML source by removing comments, extra spaces and line breaks while preserving content within `<pre>, <textarea>, <script> and <style>` tags.
+Class that compresses given HTML source by removing comments, extra spaces and line breaks while preserving content within certain content tags.
 
 Blocks that should be additionally preserved could be marked with:
 ```
